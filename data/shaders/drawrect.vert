@@ -29,6 +29,7 @@ flat out vec4  fTexColour;
 flat out vec4  fTexMask;
 flat out vec3  fPalettes;
 flat out float fZoom;
+flat out vec2  fSpriteSize;
 flat out int   fTexColourAtlas;
 flat out int   fTexMaskAtlas;
 flat out int   fScreenHeight;
@@ -45,6 +46,7 @@ void main()
 
     fPosition = vBounds.xy;
     fZoom = vZoom;
+    fSpriteSize = vec2(vBounds.zw - vBounds.xy) * vZoom;
     fTexColourAtlas = vTexColourAtlas;
     fTexMaskAtlas = vTexMaskAtlas;
 

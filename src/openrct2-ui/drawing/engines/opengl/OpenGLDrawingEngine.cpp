@@ -674,7 +674,9 @@ void OpenGLDrawingContext::Resize(int32_t width, int32_t height)
 
 void OpenGLDrawingContext::ResetPalette()
 {
-    // FlushCommandBuffers();
+    // The sprite shader needs the RGB palette to compare colours when smoothing magnified sprites.
+    _drawRectShader->Use();
+    _drawRectShader->SetPalette(_engine.GLPalette);
 }
 
 void OpenGLDrawingContext::StartNewDraw()
@@ -1283,6 +1285,7 @@ void OpenGLDrawingContext::FlushCommandBuffers()
     _swapFramebuffer->BindOpaque();
     _drawRectShader->Use();
     _drawRectShader->DisablePeeling();
+    _drawRectShader->SetPixelArtZoom(GetContext()->GetUiContext().GetScaleQuality() == ScaleQuality::pixelArt);
 
     FlushLines();
     FlushRectangles();
@@ -1306,6 +1309,7 @@ void OpenGLDrawingContext::FlushRectangles()
     if (_commandBuffers.rects.empty())
         return;
 
+    _drawRectShader->BindPaletteTexture();
     OpenGLAPI::SetTexture(0, GL_TEXTURE_2D_ARRAY, _textureCache->GetAtlasesTexture());
     OpenGLAPI::SetTexture(1, GL_TEXTURE_2D, _textureCache->GetPaletteTexture());
 
@@ -1340,6 +1344,7 @@ void OpenGLDrawingContext::HandleTransparency()
             _drawRectShader->EnablePeeling(_swapFramebuffer->GetBackDepthTexture());
         }
 
+        _drawRectShader->BindPaletteTexture();
         OpenGLAPI::SetTexture(0, GL_TEXTURE_2D_ARRAY, _textureCache->GetAtlasesTexture());
         OpenGLAPI::SetTexture(1, GL_TEXTURE_2D, _textureCache->GetPaletteTexture());
 

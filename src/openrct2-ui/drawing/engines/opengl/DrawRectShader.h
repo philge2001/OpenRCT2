@@ -10,6 +10,7 @@
 #pragma once
 
 #include "DrawCommands.h"
+#include "GLSLTypes.h"
 #include "OpenGLShaderProgram.h"
 
 namespace OpenRCT2::Ui
@@ -23,6 +24,8 @@ namespace OpenRCT2::Ui
 
         GLint uPeelingTex{ -1 };
         GLint uPeeling{ -1 };
+        GLint uPaletteRgb{ -1 };
+        GLint uPixelArtZoom{ -1 };
 
         GLint vVertMat{ -1 };
         GLint vVertVec{ -1 };
@@ -42,6 +45,7 @@ namespace OpenRCT2::Ui
         GLuint _vbo{ 0 };
         GLuint _vboInstances{ 0 };
         GLuint _vao{ 0 };
+        GLuint _paletteRgbTexture{ 0 };
 
         GLsizei _instanceCount = 0;
         size_t _maxInstancesBufferSize;
@@ -53,6 +57,9 @@ namespace OpenRCT2::Ui
         void SetScreenSize(int32_t width, int32_t height);
         void EnablePeeling(GLuint peelingTex);
         void DisablePeeling();
+        void SetPalette(const vec4* glPalette);
+        void BindPaletteTexture() const;
+        void SetPixelArtZoom(bool enabled);
 
         void SetInstances(const RectCommandBatch& instances);
         void DrawInstances();

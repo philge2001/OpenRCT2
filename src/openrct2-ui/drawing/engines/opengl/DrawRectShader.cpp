@@ -11,6 +11,8 @@
 
     #include "DrawRectShader.h"
 
+    #include <array>
+
 using namespace OpenRCT2::Ui;
 
 namespace
@@ -135,6 +137,16 @@ DrawRectShader::DrawRectShader()
 
     glCall(glUniform1i, uPeelingTex, 2);
     glCall(glUniform1i, uPeeling, 0);
+    glCall(glUniform1i, uPixelArtZoom, 0);
+    glCall(glUniform1i, uPaletteRgb, 3);
+
+    // RGB values of the current palette, used to compare colours when smoothing magnified sprites.
+    glCall(glGenTextures, 1, &_paletteRgbTexture);
+    OpenGLAPI::SetTexture(3, GL_TEXTURE_2D, _paletteRgbTexture);
+    glCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA8, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    OpenGLAPI::SetTexture(0, GL_TEXTURE_2D, 0);
 }
 
 DrawRectShader::~DrawRectShader()
@@ -142,6 +154,7 @@ DrawRectShader::~DrawRectShader()
     glCall(glDeleteBuffers, 1, &_vbo);
     glCall(glDeleteBuffers, 1, &_vboInstances);
     glCall(glDeleteVertexArrays, 1, &_vao);
+    glCall(glDeleteTextures, 1, &_paletteRgbTexture);
 }
 
 void DrawRectShader::GetLocations()
@@ -152,6 +165,8 @@ void DrawRectShader::GetLocations()
 
     uPeelingTex = GetUniformLocation("uPeelingTex");
     uPeeling = GetUniformLocation("uPeeling");
+    uPaletteRgb = GetUniformLocation("uPaletteRgb");
+    uPixelArtZoom = GetUniformLocation("uPixelArtZoom");
 
     vClip = GetAttributeLocation("vClip");
     vTexColourAtlas = GetAttributeLocation("vTexColourAtlas");
@@ -183,6 +198,31 @@ void DrawRectShader::EnablePeeling(GLuint peelingTex)
 void DrawRectShader::DisablePeeling()
 {
     glCall(glUniform1i, uPeeling, 0);
+}
+
+void DrawRectShader::SetPalette(const vec4* glPalette)
+{
+    std::array<uint8_t, 256 * 4> rgba{};
+    for (size_t i = 0; i < 256; i++)
+    {
+        rgba[i * 4 + 0] = static_cast<uint8_t>(glPalette[i].r * 255.0f + 0.5f);
+        rgba[i * 4 + 1] = static_cast<uint8_t>(glPalette[i].g * 255.0f + 0.5f);
+        rgba[i * 4 + 2] = static_cast<uint8_t>(glPalette[i].b * 255.0f + 0.5f);
+        rgba[i * 4 + 3] = 255;
+    }
+    OpenGLAPI::SetTexture(3, GL_TEXTURE_2D, _paletteRgbTexture);
+    glCall(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+    OpenGLAPI::SetTexture(0, GL_TEXTURE_2D, 0);
+}
+
+void DrawRectShader::BindPaletteTexture() const
+{
+    OpenGLAPI::SetTexture(3, GL_TEXTURE_2D, _paletteRgbTexture);
+}
+
+void DrawRectShader::SetPixelArtZoom(bool enabled)
+{
+    glCall(glUniform1i, uPixelArtZoom, enabled ? 1 : 0);
 }
 
 void DrawRectShader::SetInstances(const RectCommandBatch& instances)
