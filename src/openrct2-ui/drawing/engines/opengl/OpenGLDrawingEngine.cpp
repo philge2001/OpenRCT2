@@ -19,6 +19,7 @@
     #include "GLSLTypes.h"
     #include "OpenGLAPI.h"
     #include "OpenGLFramebuffer.h"
+    #include "PixelArtUpscaleShader.h"
     #include "SwapFramebuffer.h"
     #include "TextureCache.h"
     #include "TransparencyDepth.h"
@@ -216,6 +217,7 @@ private:
 
     std::unique_ptr<ApplyPaletteShader> _applyPaletteShader;
     std::unique_ptr<CopyRectShader> _copyRectShader;
+    std::unique_ptr<PixelArtUpscaleShader> _pixelArtUpscaleShader;
 
     std::unique_ptr<OpenGLFramebuffer> _screenFramebuffer;
     std::unique_ptr<OpenGLFramebuffer> _scaleFramebuffer;
@@ -268,6 +270,7 @@ public:
 
         _applyPaletteShader = std::make_unique<ApplyPaletteShader>();
         _copyRectShader = std::make_unique<CopyRectShader>();
+        _pixelArtUpscaleShader = std::make_unique<PixelArtUpscaleShader>();
     }
 
     void Resize(uint32_t width, uint32_t height) override
@@ -353,7 +356,15 @@ public:
         _applyPaletteShader->SetTexture(_drawingContext->GetFinalFramebuffer().GetTexture());
         _applyPaletteShader->Draw();
 
-        if (_smoothScaleFramebuffer != nullptr)
+        if (_scaleFramebuffer != nullptr && GetContext()->GetUiContext().GetScaleQuality() == ScaleQuality::pixelArt)
+        {
+            _screenFramebuffer->Bind();
+            _pixelArtUpscaleShader->Use();
+            _pixelArtUpscaleShader->SetTexture(_scaleFramebuffer->GetTexture());
+            _pixelArtUpscaleShader->SetSourceSize(_width, _height);
+            _pixelArtUpscaleShader->Draw();
+        }
+        else if (_smoothScaleFramebuffer != nullptr)
         {
             _smoothScaleFramebuffer->Copy(*_scaleFramebuffer, GL_NEAREST);
             _screenFramebuffer->Copy(*_smoothScaleFramebuffer, GL_LINEAR);

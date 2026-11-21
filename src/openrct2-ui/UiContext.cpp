@@ -612,10 +612,19 @@ public:
             _scaleQuality = ScaleQuality::nearestNeighbour;
         }
 
+        // The pixel-art upscaler is a shader, so it is only available with the OpenGL drawing engine.
+        const bool pixelArtUpscaling = Config::Get().general.pixelArtUpscaling
+            && Config::Get().general.drawingEngine == DrawingEngine::openGL;
+
         ScaleQuality scaleQuality = _scaleQuality;
         if (_scaleQuality == ScaleQuality::smoothNearestNeighbour)
         {
             scaleQuality = ScaleQuality::linear;
+        }
+        if (pixelArtUpscaling)
+        {
+            _scaleQuality = ScaleQuality::pixelArt;
+            scaleQuality = ScaleQuality::nearestNeighbour;
         }
         snprintf(scaleQualityBuffer, sizeof(scaleQualityBuffer), "%d", static_cast<int32_t>(scaleQuality));
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, scaleQualityBuffer);

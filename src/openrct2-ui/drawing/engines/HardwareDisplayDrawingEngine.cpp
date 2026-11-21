@@ -127,6 +127,11 @@ public:
         }
 
         ScaleQuality scaleQuality = GetContext()->GetUiContext().GetScaleQuality();
+        if (scaleQuality == ScaleQuality::pixelArt)
+        {
+            // Not supported by this engine, fall back to the closest equivalent.
+            scaleQuality = ScaleQuality::smoothNearestNeighbour;
+        }
         if (scaleQuality == ScaleQuality::smoothNearestNeighbour)
         {
             scaleQuality = ScaleQuality::linear;

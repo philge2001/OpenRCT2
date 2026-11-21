@@ -123,6 +123,7 @@ namespace OpenRCT2::Ui::Windows
         WIDX_FRAME_RATE_LIMIT_DROPDOWN,
         WIDX_SHOW_FPS_CHECKBOX,
         WIDX_MULTITHREADING_CHECKBOX,
+        WIDX_PIXEL_ART_UPSCALING_CHECKBOX,
 
         WIDX_BEHAVIOUR_GROUP,
         WIDX_MINIMIZE_FOCUS_LOSS,
@@ -291,7 +292,7 @@ namespace OpenRCT2::Ui::Windows
         makeWidget        ({ 10, 102}, {145,  12}, WidgetType::label,        WindowColour::secondary, STR_UI_SCALING_DESC,                   STR_WINDOW_SCALE_TIP                     ), // Scale
         makeSpinnerWidgets({155, 102}, {145,  14}, WidgetType::spinner,      WindowColour::secondary, kStringIdNone,                         STR_WINDOW_SCALE_TIP                     ), // Scale spinner (3 widgets)
 
-        makeWidget        ({  5, 129}, {300,  68}, WidgetType::groupbox,     WindowColour::secondary, STR_GROUP_RENDERING                                                             ), // Rendering group
+        makeWidget        ({  5, 129}, {300,  83}, WidgetType::groupbox,     WindowColour::secondary, STR_GROUP_RENDERING                                                             ), // Rendering group
         makeWidget        ({ 10, 146}, {145,  12}, WidgetType::label,        WindowColour::secondary, STR_DRAWING_ENGINE,                    STR_DRAWING_ENGINE_TIP                   ), // Drawing engine (label)
         makeWidget        ({155, 145}, {145,  14}, WidgetType::dropdownMenu, WindowColour::secondary                                                                                  ), // Drawing engine (dropdown label)
         makeWidget        ({288, 146}, { 11,  12}, WidgetType::button,       WindowColour::secondary, STR_DROPDOWN_GLYPH,                    STR_DRAWING_ENGINE_TIP                   ), // Drawing engine (chevron)
@@ -300,10 +301,11 @@ namespace OpenRCT2::Ui::Windows
         makeWidget        ({288, 161}, { 11,  12}, WidgetType::button,       WindowColour::secondary, STR_DROPDOWN_GLYPH                                                              ), // Frame rate limit (chevron)
         makeWidget        ({ 11, 178}, {136,  12}, WidgetType::checkbox,     WindowColour::secondary, STR_SHOW_FPS,                          STR_SHOW_FPS_TIP                         ), // Show fps
         makeWidget        ({155, 178}, {136,  12}, WidgetType::checkbox,     WindowColour::secondary, STR_MULTITHREADING,                    STR_MULTITHREADING_TIP                   ), // Multithreading
+        makeWidget        ({ 11, 193}, {280,  12}, WidgetType::checkbox,     WindowColour::secondary, STR_PIXEL_ART_UPSCALING,               STR_PIXEL_ART_UPSCALING_TIP              ), // Pixel-art upscaling
 
-        makeWidget        ({  5, 200}, {300,  49}, WidgetType::groupbox,     WindowColour::secondary, STR_GROUP_BEHAVIOUR                                                             ), // Behaviour group
-        makeWidget        ({ 11, 215}, {280,  12}, WidgetType::checkbox,     WindowColour::secondary, STR_MINIMISE_FULLSCREEN_ON_FOCUS_LOSS, STR_MINIMISE_FULLSCREEN_ON_FOCUS_LOSS_TIP), // Minimise fullscreen focus loss
-        makeWidget        ({ 11, 230}, {280,  12}, WidgetType::checkbox,     WindowColour::secondary, STR_DISABLE_SCREENSAVER,               STR_DISABLE_SCREENSAVER_TIP              )  // Disable screensaver
+        makeWidget        ({  5, 215}, {300,  49}, WidgetType::groupbox,     WindowColour::secondary, STR_GROUP_BEHAVIOUR                                                             ), // Behaviour group
+        makeWidget        ({ 11, 230}, {280,  12}, WidgetType::checkbox,     WindowColour::secondary, STR_MINIMISE_FULLSCREEN_ON_FOCUS_LOSS, STR_MINIMISE_FULLSCREEN_ON_FOCUS_LOSS_TIP), // Minimise fullscreen focus loss
+        makeWidget        ({ 11, 245}, {280,  12}, WidgetType::checkbox,     WindowColour::secondary, STR_DISABLE_SCREENSAVER,               STR_DISABLE_SCREENSAVER_TIP              )  // Disable screensaver
     );
 
     constexpr int32_t kFrameRenderingStart = 53;
@@ -814,6 +816,13 @@ namespace OpenRCT2::Ui::Windows
                     Config::Save();
                     invalidate();
                     break;
+                case WIDX_PIXEL_ART_UPSCALING_CHECKBOX:
+                    Config::Get().general.pixelArtUpscaling ^= 1;
+                    Config::Save();
+                    GfxInvalidateScreen();
+                    ContextTriggerResize();
+                    invalidate();
+                    break;
                 case WIDX_MINIMIZE_FOCUS_LOSS:
                     Config::Get().general.minimizeFullscreenFocusLoss ^= 1;
                     Config::Save();
@@ -1007,6 +1016,8 @@ namespace OpenRCT2::Ui::Windows
 
             setCheckboxValue(WIDX_SHOW_FPS_CHECKBOX, Config::Get().general.showFPS);
             setCheckboxValue(WIDX_MULTITHREADING_CHECKBOX, Config::Get().general.multiThreading);
+            setCheckboxValue(WIDX_PIXEL_ART_UPSCALING_CHECKBOX, Config::Get().general.pixelArtUpscaling);
+            setWidgetDisabled(WIDX_PIXEL_ART_UPSCALING_CHECKBOX, Config::Get().general.drawingEngine != DrawingEngine::openGL);
             setCheckboxValue(WIDX_MINIMIZE_FOCUS_LOSS, Config::Get().general.minimizeFullscreenFocusLoss);
             setCheckboxValue(WIDX_DISABLE_SCREENSAVER_LOCK, Config::Get().general.disableScreensaver);
 

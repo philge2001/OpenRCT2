@@ -47,7 +47,8 @@ namespace OpenRCT2
     {
         nearestNeighbour,
         linear,
-        smoothNearestNeighbour
+        smoothNearestNeighbour,
+        pixelArt, // OpenGL only: edge-smoothing pixel-art upscaler
     };
 
     enum class MeasurementFormat : int32_t
